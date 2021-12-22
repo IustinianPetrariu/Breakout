@@ -1,58 +1,70 @@
+import numpy as np
+import tensorflow as tf
 import gym
+import os
+import datetime
+from gym import wrappers
+import tensorflow.keras.optimizers as ko
 import time
-from PreprocessAtari import PreprocessAtari
-from FrameBuffer import FrameBuffer
-import matplotlib.pyplot as plt
-
-# 0  'NOOP'
-# 1  'FIRE'
-# 2  'RIGHT'
-# 3  'LEFT' 
-
-def make_env():
-    env = gym.make("BreakoutDeterministic-v4")
-    env = PreprocessAtari(env)
-    env = FrameBuffer(env, n_frames=4)
-    return env
-
-env = make_env()
-env.reset()
-n_actions = env.action_space.n
-state_dim = env.observation_space.shape
+from Model import Model
+from Agent import Agent 
 
 
-for _ in range(50):
-    obs, _, _, _ = env.step(env.action_space.sample())
+np.random.seed(1)
+tf.random.set_seed(1)
 
 
-plt.title("Game image")
-plt.imshow(env.render("rgb_array"))
-plt.show()
+def test_model():
 
-plt.title("Agent observation (4 frames left to right)")
-plt.imshow(obs.transpose([0,2,1]).reshape([state_dim[0],-1]))
-plt.show()
+    env = gym.make('Breakout-ram-v0')
+    print('num_actions: ', env.action_space.n)
 
-# env = gym.make("BreakoutNoFrameskip-v4")
-# env = PreprocessAtari(env)
+    model = Model(128, env.action_space.n)
 
-# print("Observation Space: ", env.observation_space)
-# print("Action Space       ", env.action_space)
-# print("am afisat")
-# print(env.observation_space.high.shape)
-# print(env.observation_space.low.shape)
+    obs = env.reset()
+    print('obs_shape: ', obs.shape)
+
+    # tensorflow 2.0: no feed_dict or tf.Session() needed at all
+    best_action, q_values = model.action_value(obs)
+    print('res of test model: ', best_action, q_values)  # 0 [ 0.00896799 -0.02111824]
 
 
-# obs = env.reset()
-# for i_episode in range(20):
-#     observation = env.reset()
-#     for t in range(200):
-#         env.render()
-#         time.sleep(0.05)
-#         # print(observation)
-#         action = env.action_space.sample()
-#         observation, reward, done, info = env.step(action)
-#         if done:
-#             print("Episode finished after {} timesteps".format(t+1))
-#             break
-# env.close()
+if __name__ == '__main__':
+
+	# test_model()
+	print('nimic')
+	env = gym.make("Breakout-ram-v0")
+	# env = wrappers.Monitor(env, os.path.join(os.getcwd(), 'video_breakout'), force = True)
+	# env = wrappers.RecordVideo(env, os.path.join(os.getcwd(), 'video_breakout'), force = True)
+	num_actions = env.action_space.n # 4
+    
+	num_state = env.reset().shape[0] # (128,) 
+
+	model = Model(num_state, num_actions)
+
+	# model = model.get_network() 
+	target_model = Model(num_state, num_actions)
+	# target_model = target_model.get_network()
+	agent = Agent(model, target_model,  env) # train_nums=int(7e4)
+	
+	agent.train("new_dqn/dqn_checkpoint")
+
+	print("train is over and model is saved")
+
+	np.save('dqn_agent_train_lost.npy', agent.loss_stat)
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
