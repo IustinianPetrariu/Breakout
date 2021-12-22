@@ -1,0 +1,11 @@
+#### resources :
+
+      ## github 
+ https://github.com/GiannisMitr/DQN-Atari-Breakout
+ https://github.com/JackFurby/Breakout
+
+        #other 
+ https://blog.paperspace.com/getting-started-with-openai-gym/
+ https://chan-y-park.github.io/blog/rl_atari_part_1.html
+ https://stackoverflow.com/questions/57149560/openai-gym-breakout-ram-v4-unable-to-learn
+ https://pythonprogramming.net/training-deep-q-learning-dqn-reinforcement-learning-python-tutorial/?completed=/deep-q-learning-dqn-reinforcement-learning-python-tutorial/
