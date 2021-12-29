@@ -3,7 +3,10 @@ import tensorflow as tf
 import gym
 import os
 import datetime
+import warnings
 from gym import wrappers
+tf.compat.v1.disable_eager_execution()
+warnings.filterwarnings("ignore")
 import tensorflow.keras.optimizers as ko
 import time
 from Model import Model
@@ -31,7 +34,7 @@ def test_model():
 
 if __name__ == '__main__':
 
-	# test_model()
+	test_model()
 	print('nimic')
 	env = gym.make("Breakout-ram-v0")
 	# env = wrappers.Monitor(env, os.path.join(os.getcwd(), 'video_breakout'), force = True)
@@ -45,7 +48,7 @@ if __name__ == '__main__':
 	# model = model.get_network() 
 	target_model = Model(num_state, num_actions)
 	# target_model = target_model.get_network()
-	agent = Agent(model, target_model,  env) # train_nums=int(7e4)
+	agent = Agent(model, target_model,  env, train_nums=int(1e6)) # train_nums=int(7e4)
 	
 	agent.train("new_dqn/dqn_checkpoint")
 
@@ -53,8 +56,6 @@ if __name__ == '__main__':
 
 	np.save('dqn_agent_train_lost.npy', agent.loss_stat)
    
-
-
 
 
 

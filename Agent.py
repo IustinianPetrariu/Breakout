@@ -1,12 +1,13 @@
-import tensorflow as tf 
+import tensorflow as tf
 import numpy as np 
 import time
+from tensorflow.keras import optimizers
 
 class Agent:
 
 	def __init__(self, model, target_model, env, buffer_size=10000, learning_rate=.0015, epsilon=0.6, epsilon_dacay=0.999,
-                 min_epsilon=.1, gamma=.95, batch_size=32, target_update_iter=1000, learn_every_n_step=32, train_nums=10000, 
-                 start_learning=100, save_every_n_step = 5000):
+                 min_epsilon=.1, gamma=.95, batch_size=32, target_update_iter=40000, learn_every_n_step=32, train_nums=10000, 
+                 start_learning=1000, save_every_n_step = 5000):
 
 		self.model = model
 		self.target_model = target_model
@@ -54,7 +55,7 @@ class Agent:
 			episode_reward = 0.0
 
 			while not done: 
-				self.env.render()
+				# self.env.render()
 				# time.sleep(0.05)
 				step += 1
 				best_action, q_values = self.model.action_value(obs[None])
@@ -101,12 +102,14 @@ class Agent:
 		ns_batch = self.next_states[idxes]
 		done_batch = self.dones[idxes]
 
-		target_q = r_batch + self.gamma * np.amax(self.get_target_value(ns_batch), axis = 1)*(1-done_batch)
+		target_q = r_batch + self.gamma * np.amax(self.get_target_value(ns_batch), axis = 1)  * (1-done_batch)
 		target_f = self.model.predict(s_batch) # shape = (32,4)
 
 		for i, val in enumerate(a_batch):
 			target_f[i][val] = target_q[i]
-
+		self.model.compile(optimizer=optimizers.Adam(learning_rate=0.0001),
+			loss='mse',
+			metrics=['accuracy'])
 		losses = self.model.train_on_batch(s_batch, target_f)
 		return losses
 	

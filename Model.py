@@ -14,7 +14,6 @@ class Model(tf.keras.Model):
         
 
        
-
     def call(self, inputs, training = None):
         x = self.input_layer(inputs)
         x = self.layer1(x)
