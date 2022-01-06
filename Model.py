@@ -8,8 +8,8 @@ class Model(tf.keras.Model):
     def __init__(self, num_states, num_actions, num_neurons=128):
         super().__init__(name = 'NN')
         self.input_layer  = InputLayer(input_shape=(num_states,))
-        self.layer1       = Dense(num_neurons, activation = 'relu',kernel_initializer='glorot_uniform')
-        self.layer2       = Dense(num_neurons, activation = 'relu',kernel_initializer='glorot_uniform')
+        self.layer1       = Dense(num_neurons, activation = 'relu', kernel_initializer='glorot_uniform')
+        self.layer2       = Dense(num_neurons, activation = 'relu', kernel_initializer='glorot_uniform')
         self.output_layer = Dense(num_actions,  activation='linear')  #(None,num_actions)
         
        

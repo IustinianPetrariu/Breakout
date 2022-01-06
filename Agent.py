@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np 
+import csv 
 import time
 from tensorflow.keras import optimizers
 
@@ -18,26 +19,33 @@ class Agent:
 		self.gamma 				= 0.95
 		self.epsilon 			= 0.6
 		self.critic_update  	= 40000
-		self.start_learning 	= 1000
-		self.batch_size     	= 32
 		self.save_every_n_step 	= 5000
 		self.buffer_size    	= 10000
-		self.epsilon_decay  	= 0.99
+		self.start_learning 	= 1000
+		self.batch_size     	= 32
 		self.learn_every_n_step = 32
+		self.epsilon_decay  	= 0.99
 		self.num_in_buffer  	= 0
 		self.min_epsilon    	= 0.1
 
 		self.obs 			= np.empty((self.buffer_size,) + self.env.reset().shape)
-		self.actions 		= np.empty((self.buffer_size), dtype = np.int8)
-		self.rewards 		= np.empty((self.buffer_size), dtype = np.float32)
 		self.dones 			= np.empty((self.buffer_size), dtype = np.bool)
 		self.next_states 	= np.empty((self.buffer_size, ) + self.env.reset().shape)
-		self.next_idx 		= 0
+		self.actions 		= np.empty((self.buffer_size), dtype = np.int8)
+		self.rewards 		= np.empty((self.buffer_size), dtype = np.float32)
+		self.next_indexes   = 0
 
 
 	def train(self, model_path):
 		episode = 0
 		step = 0
+		header = ['Results'] 
+		
+		with open('csv_results.csv', 'w', encoding='UTF8', newline='') as f:
+			writer = csv.writer(f)
+
+			# write the header
+			writer.writerow(header)
 		
 		while step < self.num_frames: 
 
@@ -81,36 +89,42 @@ class Agent:
 			
 			if step > self.start_learning:
 				self.epsilon = self.epsilon * self.epsilon_decay
-
+			
+			# open the file in the write mode
+			with open('csv_results.csv', 'a', encoding='UTF-8', newline='') as f:
+				writer = csv.writer(f)
+				# write a row to the csv file
+				writer.writerow([episode_reward,])
+			
+			
 			print("episode: ", episode, ' step: ', step,  '-> reward: ', episode_reward)
 			episode += 1
 
-
 	def train_step(self):
-		idxes 		= self.sample()	
-		s_batch 	= self.obs[idxes]  # shape = (batch_size=32, 128) obs.shape[0] = 128
-		a_batch 	= self.actions[idxes]
-		r_batch 	= self.rewards[idxes]
-		ns_batch 	= self.next_states[idxes]
-		done_batch 	= self.dones[idxes]
+		indexes 	 = self.sample()	
+		state_batch  = self.obs[indexes]  # shape = (batch_size=32, 128) obs.shape[0] = 128
+		action_batch = self.actions[indexes]
+		reward_batch = self.rewards[indexes]
+		nexts_batch  = self.next_states[indexes]
+		done_batch 	 = self.dones[indexes]
 
-		target_q = r_batch + self.gamma * np.amax(self.get_critic_choice(ns_batch), axis = 1)  * (1-done_batch)
-		target_f = self.actor.predict(s_batch) # shape = (32,4)
+		target_q = reward_batch + self.gamma * np.amax(self.get_critic_choice(nexts_batch), axis = 1)  * (1-done_batch)
+		target_f = self.actor.predict(state_batch) # shape = (32,4)
 
-		for i, val in enumerate(a_batch):
+		for i, val in enumerate(action_batch):
 			target_f[i][val] = target_q[i]
 
-		self.actor.train_on_batch(s_batch, target_f)
+		self.actor.train_on_batch(state_batch, target_f)
 
 
 	def experience_replay(self, obs, action, reward, next_state, done):
-		n_idx = self.next_idx % self.buffer_size
-		self.obs[n_idx] = obs
-		self.actions[n_idx] = action
-		self.rewards[n_idx] = reward
-		self.next_states[n_idx] =  next_state
-		self.dones[n_idx] =  done 
-		self.next_idx  = (self.next_idx + 1) % self.buffer_size
+		n_indexes = self.next_indexes % self.buffer_size
+		self.obs[n_indexes] = obs
+		self.actions[n_indexes] = action
+		self.rewards[n_indexes] = reward
+		self.next_states[n_indexes] =  next_state
+		self.dones[n_indexes] =  done 
+		self.next_indexes  = (self.next_indexes + 1) % self.buffer_size
 
 
 	# take 32 differet action 

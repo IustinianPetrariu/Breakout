@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	actor  = Model(state_number, actions_number)
 	critic = Model(state_number, actions_number)
 
-	agent = Agent(actor, critic,  env, num_frames=int(1e6)) # train_nums=int(7e4)
+	agent = Agent(actor, critic,  env, num_frames=int(8e6)) # train_nums=int(7e4)
 	
 	agent.train("Actor/dqn_model")
    
