@@ -1,23 +1,27 @@
-import gym
-import time
-from gym.utils import play
+# import gym
+# import time
+# from gym.utils import play
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 
 # gameplay
 # env = gym.make('Breakout-v0')
 # play.play(env, zoom=3)
 
+df = pd.read_csv('csv_results.csv')
+# print(df.head())
+ax = df.plot.hist()
+ax.figure.savefig('histogram.pdf')
 
-env = gym.make('Breakout-ram-v0')
-for i_episode in range(1):
-    observation = env.reset()
-    for t in range(100):
-        env.render()
-        time.sleep(1)
-        print(observation)
-        action = env.action_space.sample()
-        observation, reward, done, info = env.step(action)
-        if done:
-            print("Episode finished after {} timesteps".format(t+1))
-            break
-env.close()
+
+ax = df.plot()
+ax.figure.savefig('graph.pdf')
+
+# df.set_index('Results').plot()
+# plt.show()
+
+# ax = df.hist()  # s is an instance of Series
+# fig = ax.get_figure()
+# fig.savefig('./figure.pdf')

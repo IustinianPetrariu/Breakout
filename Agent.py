@@ -36,6 +36,32 @@ class Agent:
 		self.next_indexes   = 0
 
 
+	def test(self, model_path):
+		self.actor.load_weights(model_path)
+
+		obs = self.env.reset()
+		#normalize observation 
+		obs = obs / 256
+		done = False
+		while not done:
+			self.env.render()
+			time.sleep(0.05)
+
+			next_obs, reward, done, info = self.env.step(1)
+			next_obs = next_obs / 256
+			best_action, q_values = self.actor.take_action(next_obs[None])
+			action = best_action
+			print(action)
+
+			# self.epsilon = max(self.epsilon, self.min_epsilon)
+			next_obs, reward, done, info = self.env.step(action)
+
+			#normalize next observation 
+			next_obs = next_obs / 256
+			
+			obs = next_obs
+		self.env.close()
+
 	def train(self, model_path):
 		episode = 0
 		step = 0
